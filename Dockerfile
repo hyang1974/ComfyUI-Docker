@@ -3,24 +3,38 @@
 # A runtime environment for https://github.com/comfyanonymous/ComfyUI
 ################################################################################
 
-FROM opensuse/tumbleweed:latest
+FROM ubuntu:22.04
 
-LABEL maintainer="code@yanwk.fun"
+LABEL maintainer="hy@yanghong.dev"
 
-RUN --mount=type=cache,target=/var/cache/zypp \
+# 使用构建参数设置环境变量
+ARG http_proxy
+ARG https_proxy
+
+# 设置环境变量
+ENV http_proxy=$http_proxy
+ENV https_proxy=$https_proxy
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN --mount=type=cache,target=/var/cache/apt \
     set -eu \
-    && zypper install --no-confirm \
-        python311 python311-pip \
-        python311-wheel python311-setuptools python311-numpy \
-        python311-devel python311-Cython \
-        gcc-c++ cmake \
-        shadow git aria2 \
-        Mesa-libGL1 libgthread-2_0-0 \
-    && rm /usr/lib64/python3.11/EXTERNALLY-MANAGED
+    && apt update \
+    && apt upgrade -y \
+    && apt install -y software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt update \
+    && apt install -y \
+        sudo \
+        python3.11 python3-pip \
+        g++ cmake \
+        git aria2 \
+        libgl1-mesa-dev libglib2.0-0 \
+    && rm -rf /usr/lib64/python3.11/EXTERNALLY-MANAGED
+
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    pip install --break-system-packages \
-        --upgrade pip
+    pip install --upgrade pip
 
 # Install PyTorch
 RUN --mount=type=cache,target=/root/.cache/pip \
