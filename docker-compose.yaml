@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  comfyui-ubuntu-2204:
+    image: comfyui-ubunut-2204:v0.01   # please change the image name and tag base your environment
+    container_name: sd-comfyui-ubuntu-2204
+    environment:
+      - http_proxy=http://192.168.3.200:7890
+      - https_proxy=http://192.168.3.200:7890
+      - ftp_proxy=http://192.168.3.200:7890
+      - no_proxy=localhost;127.0.0.1;192.168.3.0/24
+    volumes:
+      - /mnt/dev/myprojects/comfyui-docker:/home/runner
+    ports:
+      - "7860:8188"
+    shm_size: 16G
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: "all"
+            capabilities: [gpu]
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
